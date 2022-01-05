@@ -24,6 +24,73 @@ fun main() {
     println("${nonRepeatingSubstring("aabccbb")} expected: 3")
     println("${nonRepeatingSubstring("abbbb")} expected: 2")
     println("${nonRepeatingSubstring("abccde")} expected: 3")
+
+    println("Length of the longest substring with k replacements:")
+    println("${lengthOfLongestSubstring(2,"aabccbb")} expected: 5")
+    println("${lengthOfLongestSubstring(1,"abbcb")} expected: 4")
+    println("${lengthOfLongestSubstring(1,"abccde")} expected: 3")
+    println("${lengthOfLongestSubstring(1,"abc")} expected: 2")
+
+    println("Length of the longest substring of Ones with k replacements:")
+    println("${lengthOfLongestSubstringOfOnes(2,intArrayOf(0,1,1,0,0,0,1,1,0,1,1))} expected: 6")
+    println("${lengthOfLongestSubstringOfOnes(3,intArrayOf(0,1,0,0,1,1,0,1,1,0,0,1,1))} expected: 9")
+}
+
+/**
+ * Given an array containing 0s and 1s, if you are allowed to replace no more than ‘k’ 0s with 1s,
+ * find the length of the longest contiguous subarray having all 1s.
+ */
+fun lengthOfLongestSubstringOfOnes(k: Int, array: IntArray): Int {
+    var windowStart = 0
+    var replacements = k
+    var result = 0
+
+    for(windowEnd in array.indices) {
+        val rightNumber = array[windowEnd]
+        if(rightNumber == 0) {
+            if(replacements > 0) {
+                replacements--
+            } else {
+                while(replacements == 0) {
+                    if(array[windowStart] == 0) replacements++
+                    windowStart++
+                }
+                replacements--
+            }
+        }
+        result = max(result, windowEnd - windowStart + 1)
+    }
+
+    return result
+
+}
+
+
+/**
+ * Given a string with lowercase letters only, if you are allowed to replace no more than ‘k’ letters with any letter,
+ * find the length of the longest substring having the same letters after replacement.
+ */
+fun lengthOfLongestSubstring(k: Int, str: String): Int {
+    // we will need a hashMap to maintain the frequency of letters
+    var windowStart = 0
+    var result = 0
+    var mostUsedLetter = 0
+    val hashMap: HashMap<Char,Int> = HashMap()
+
+    for(windowEnd in str.indices) {
+        val rightLetter = str[windowEnd]
+        hashMap[rightLetter] = hashMap.getOrDefault(rightLetter,0) + 1
+
+        mostUsedLetter = max(mostUsedLetter, hashMap.getOrDefault(rightLetter,0))
+        // if length of window - mostUsedLetter > k we need to shrink it
+        if(windowEnd - windowStart + 1 - mostUsedLetter > k) {
+            hashMap[str[windowStart]] = hashMap.getOrDefault(str[windowStart],1) - 1
+            windowStart++
+        }
+
+        result = max(result, windowEnd-windowStart+1)
+    }
+    return result
 }
 
 /**
@@ -132,3 +199,4 @@ fun nonRepeatingSubstring(str: String): Int {
     }
     return result
 }
+
