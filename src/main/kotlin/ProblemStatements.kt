@@ -6,8 +6,60 @@ fun main() {
     println("${findPermutation("abc","aaacb")} expected: true")
     println("${findPermutation("abc","llacccb")} expected: false")
     println("${findPermutation("abc","llacccba")} expected: true")
+
+    println("${findCountOfAnagrams("pq","ppqp")} expected: [1, 2]")
+    println("${findCountOfAnagrams("abc","abbcabc")} expected: [2, 3, 4]")
 }
 
+/*
+    (hard) Given a string and a pattern, find all anagrams of the pattern in the given string.
+
+    Here we can first set up a freq map of the pattern string.
+    Then setup up a sliding window. As we increment windowEnd, we check if letter is in freq Map > 0 times
+        If it is, we decrement the map and a counter of letters in the patter.
+            If counter = 0, we found an anagram and can do result++
+        If letter is not in freq map or is = 0, need to increment windowStart and update freq map if it's in there
+ */
+fun findCountOfAnagrams(pattern: String, str: String): MutableList<Int> {
+    val result = mutableListOf<Int>()
+    var patternCount = pattern.length
+    var freqMap = pattern.groupingBy { it }.eachCount().toMutableMap()
+    val goalMap = freqMap
+    var windowStart = 0
+    var windowEnd = 0
+    while(windowStart < str.length && !freqMap.containsKey(str[windowStart])) {
+        windowStart++
+        windowEnd++
+    }
+
+    while(windowEnd < str.length) {
+        val endChar = str[windowEnd]
+        if(!freqMap.containsKey(endChar)) {
+            // set window to next letter
+            windowStart = windowEnd + 1
+            freqMap = goalMap // reset the freqMap
+        } else if (freqMap.getOrDefault(endChar,0) == 0) {
+            // we have seen letter enough times
+            // increment windowStart
+            while(freqMap.getOrDefault(endChar,0) == 0) {
+                val startChar = str[windowStart]
+                if(freqMap.containsKey(startChar)) {
+                    freqMap[startChar] = freqMap.getOrDefault(startChar,0) + 1
+                    patternCount++
+                }
+                windowStart++
+            }
+        }
+        if(freqMap.getOrDefault(endChar,0) > 0) {
+            // it is in freqMap
+            freqMap[endChar] = freqMap.getOrDefault(endChar,0) - 1
+            patternCount--
+            if(patternCount == 0) result.add(windowStart)
+        }
+        windowEnd++
+    }
+    return result
+}
 
 /**
  * Given a string and a pattern, find out if the string contains any permutation of the pattern.
